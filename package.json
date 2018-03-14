@@ -1,4 +1,8 @@
 {
   "name": "flyweight",
-  "version": "0.0.0"
+  "version": "0.0.0",
+  "devDependencies": {
+    "gui": "^0.3.1",
+    "reify": "^0.14.2"
+  }
 }
