@@ -89,7 +89,17 @@ function parse(input) {
   }
 
   function propValue() {
-    return anyOf(quotedString, binding)()
+    return anyOf(number, quotedString, binding)()
+  }
+
+  function number() {
+    const [, value] = regex(/(\d+)/y) || []
+
+    if ( ! value){
+      return null
+    }
+
+    return { type: 'number', value: +value }
   }
 
   function quotedString() {
