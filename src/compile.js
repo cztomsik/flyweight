@@ -1,4 +1,11 @@
-export default function compile(lib, { root }) {
+import { definitions, runtime } from './lib'
+import parse from './parse'
+
+export default function compile(str) {
+  return compileTemplate(parse(str))
+}
+
+function compileTemplate({ root }) {
   let compNum = 1
   let valNum = 1
   const components = []
@@ -6,9 +13,11 @@ export default function compile(lib, { root }) {
   // walk the ast and prepare whatever is needed in template
   walk(root)
 
-  return `
-    class View {
+  return new Function(['runtime'], `
+    return class View {
       constructor(data) {
+        console.log('cons')
+
         this.data = data
 
         ${each(components, c => `
@@ -40,7 +49,7 @@ export default function compile(lib, { root }) {
         `)}
       }
     }
-  `
+  `)(runtime)
 
   function walk(node) {
     // TODO: type children?
@@ -64,9 +73,9 @@ export default function compile(lib, { root }) {
 
       case 'component':
         const c = node
-        const gen = lib[c.name]
+        const def = definitions.get(c.name)
 
-        if ( ! gen) {
+        if ( ! def) {
           throw new Error(`Unknown component ${c.name}`)
         }
 
@@ -86,12 +95,44 @@ export default function compile(lib, { root }) {
           p.result = p.value.result
         }
 
-        c.instance = gen.instance()
-        c.propsToInit = c.props
-        c.destroy = gen.destroy(c.var)
-        c.update = gen.update(c.var)
-        c.setProp = (propName, value) => gen.setProp(c.var, propName, value)
-        c.result = gen.result(c.var)
+        if ( ! runtime[c.name]) {
+          if (def.template) {
+            // TODO: refactor
+            def.result = 'result'
+            def.update = 'update'
+            def.destroy = 'destroy'
+
+            const ViewModel = def.Comp
+            const View = compile(def.template)
+
+            function factory() {
+              return new View(new ViewModel())
+            }
+
+            runtime[c.name] = factory
+          } else {
+            runtime[c.name] = def.Comp
+          }
+        }
+
+        c.args = def.args.map(k => c.props[k].result)
+        c.instance = `${def.construct ?'new' :''} runtime.${c.name}(${c.args})`
+        c.propsToInit = c.props.filter(p => ! def.args.includes(p.name))
+
+        c.destroy = def.destroy ?`${c.var}.${def.destroy}()` :''
+
+        c.update = def.update ?`${c.var}.${def.update}()` :''
+
+        c.setProp = (k, v) => {
+          if (def.override[k]) {
+            return `runtime.${c.name}_${k}(${c.var}, ${v})`
+          }
+
+          return (def.setProp === 'setter') ?`${c.var}.${setter(k)}(${v})` :`${c.var}.${k} = ${v}`
+        }
+
+        // result has to be stable
+        c.result = [c.var, def.result].filter(Boolean).join('.')
 
         components.push(c)
 
@@ -106,4 +147,8 @@ export default function compile(lib, { root }) {
 function each(arr, cb) {
   // map, extract content, join, unindent, trimLeft whole
   return arr.map(cb).map(str => str.replace(/^\n(.*?)\n  *?$/s, '$1')).join('\n').replace(/^  /gm, '').replace(/^\s*/, '')
+}
+
+function setter(propName) {
+  return `set${propName[0].toUpperCase() + propName.slice(1)}`
 }
