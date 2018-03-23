@@ -115,7 +115,7 @@ function compileTemplate({ root }) {
           }
         }
 
-        c.args = def.args.map(k => c.props[k].result)
+        c.args = c.props.filter(p => def.args.includes(p.name)).map(p => p.result)
         c.instance = `${def.construct ?'new' :''} runtime.${c.name}(${c.args})`
         c.propsToInit = c.props.filter(p => ! def.args.includes(p.name))
 
@@ -128,7 +128,7 @@ function compileTemplate({ root }) {
             return `runtime.${c.name}_${k}(${c.var}, ${v})`
           }
 
-          return (def.setProp === 'setter') ?`${c.var}.${setter(k)}(${v})` :`${c.var}.${k} = ${v}`
+          return (def.setProperty === 'setter') ?`${c.var}.${setter(k)}(${v})` :`${c.var}.${k} = ${v}`
         }
 
         // result has to be stable
