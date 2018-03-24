@@ -4,7 +4,6 @@ Light templates for dom, gui, whatever you need
 <!--
 
   TODO: fiddles
-  TODO: screenshots + links + links to source
 
 -->
 
@@ -26,5 +25,18 @@ Light templates for dom, gui, whatever you need
       </div>
     `, data)
 
-    document.querySelector('#root').replaceWith(view.result)
+    document.body.appendChild(view.result)
     window.onclick = () => view.update()
+
+
+### DOM
+![image](https://pbs.twimg.com/media/DZEu7u3WAAEzr5N.jpg:large)
+[Source](examples/dom)
+
+    npm run dom
+
+### GUI
+![image](https://pbs.twimg.com/media/DY_rCCUX4AAqNCY.jpg:large)
+[Source](examples/gui)
+
+    npm run gui

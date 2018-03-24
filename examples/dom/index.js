@@ -31,13 +31,11 @@ class Counter {
   inc = () => this.count++
 }
 
-
 const view = fly(`
   <App />
 `)
 
 console.log(view)
 
-document.querySelector('#root').replaceWith(view.result)
-
+window.onload = () => document.body.appendChild(view.result)
 window.onclick = () => view.update()
