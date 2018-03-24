@@ -66,6 +66,7 @@ function compileTemplate({ root }) {
     }
 
     switch (node.type) {
+      case 'boolean':
       case 'number':
       case 'string':
         node.result = JSON.stringify(node.value)
@@ -146,7 +147,7 @@ function compileTemplate({ root }) {
 
 function each(arr, cb) {
   // map, extract content, join, unindent, trimLeft whole
-  return arr.map(cb).map(str => str.replace(/^\n(.*?)\n  *?$/s, '$1')).join('\n').replace(/^  /gm, '').replace(/^\s*/, '')
+  return arr.map(cb).map(str => str.replace(/^\n([\s\S]*?)\n  *?$/, '$1')).join('\n').replace(/^  /gm, '').replace(/^\s*/, '')
 }
 
 function setter(propName) {

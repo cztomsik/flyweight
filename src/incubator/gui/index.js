@@ -1,5 +1,5 @@
 import gui from 'gui'
-import { component } from '../..'
+import { component } from 'flyweight'
 
 function Window(width = 800, height = 600, children = []) {
   const w = gui.Window.create({})

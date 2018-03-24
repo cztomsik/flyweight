@@ -85,7 +85,7 @@ function parse(input) {
       return null
     }
 
-    return { name, value: assign ?expect(propValue) :true }
+    return { name, value: assign ?expect(propValue) :{ type: 'boolean', value: true } }
   }
 
   function propValue() {
